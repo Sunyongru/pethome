@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>宠物之家</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+</head>
+<body style="height: 100%" onload="queryUn()">
+<div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" >宠物之家</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li class="active"><a href="/pethome/index">首页</a></li>
+                    <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                    <li><a href="/help/helpCare/my">我要帮养</a></li>
+                </ul>
+                <div class="pull-right">
+                    <div th:unless="${flag}">
+                        <ul class="nav">
+                            <a><button class="btn" onclick="to_regist()">注册</button></a>
+                            <button class="btn" onclick="to_login()">登录</button>
+                        </ul>
+                    </div>
+                    <div th:if="${flag}">
+                        <ul class="nav">
+                            <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span id="unRead" class="badge badge-important"></span></a></li>
+                            <a><button class="btn" onclick="to_exit()">退出</button></a>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <!-- Main hero unit for a primary marketing message or call to action -->
+            <div class="hero-unit">
+                <h1>您好</h1>
+                <p>这里是一个为您提供宠物寄养信息的平台，在这里找到您宠物合适的寄养家庭，或者找到您想帮养的宠物，我们非常期待您的加入</p>
+                <p><a href="/operation/to_regist" class="btn btn-primary btn-large">开始加入 &raquo;</a></p>
+            </div>
+        </div>
+        <div class="span12">
+            <!-- Example row of columns -->
+            <div class="row">
+                <div class="span6">
+                    <img src="/img/dbg1.jpg">
+                    <p>在您要外出的时候，自己的爱宠却不知道该怎么安排，那就在这里发布你的寄养信息，这样就会有人和您联系，让你在外出的时候爱宠也能有一个舒适的家</p>
+                    <p><a class="btn" href="/foster/fosterCare/my">点击进入 &raquo;</a></p>
+                </div>
+                <div class="span6">
+                    <img src="/img/dbg2.jpg">
+                    <p>如果您是一位喜欢宠物的人，或者是一位热心肠的人，并且有能力或有意向去帮助别人照顾一些宠物， 那就在这里发布消息，等待他人与您联系,成功帮养宠物</p>
+                    <p><a class="btn" href="/help/helpCare/my">点击进入 &raquo;</a></p>
+                </div>
+            </div>
+            <hr>
+            <footer>
+                <p>&copy; Created By ItMonkey 2020</p>
+            </footer>
+        </div>
+    </div>
+</div>
+</body>
+    <script>
+
+        function to_regist() {
+            window.location.href="/operation/to_regist"
+        }
+
+        function to_login() {
+            window.location.href="/operation/to_login";
+        }
+
+        function to_exit() {
+            $.ajax({
+                url:"/pethome/exit",
+                success:function (data) {
+                    if (data.code==0){
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+        window.setInterval(function () {
+            if(!isEmpty()){
+                $.ajax(queryUnRead)
+            }
+        },1000*60)
+        var queryUnRead={
+            url:"/operation/getUnRead/"+$("#userAccount").text(),
+            success:function (data) {
+                if (data>0&&data<100){
+                    $("#unRead").text(data);
+                }
+                if (data>100){
+                    $("#unRead").text("99+");
+                }
+            }
+        }
+        function queryUn() {
+            if(!isEmpty()){
+                $.ajax(queryUnRead)
+            }
+        }
+        function isEmpty(){
+            var userAccount=$("#userAccount").text();
+            if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    </script>
+</html>

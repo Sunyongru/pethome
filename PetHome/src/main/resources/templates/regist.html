@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>注册</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <style type="text/css">
+        #loginForm{
+            position:absolute;
+            top: 10%;
+        }
+    </style>
+</head>
+<body background="/img/bg.png">
+<div class="container">
+    <form id="loginForm" class="form-horizontal" style="width:50%; margin:0 auto">
+        <h2 class="form-signin-heading">请注册</h2>
+        <div class="control-group muted">
+            <label class="control-label" for="userAccount">账号</label>
+            <div class="controls">
+                <input id="userAccount" type="text" placeholder="账号">
+            </div>
+            <div class="controls">
+                <span class="help-inline">输入手机号即可</span>
+            </div>
+        </div>
+        <div class="control-group muted">
+            <label class="control-label" for="password">密码</label>
+            <div class="controls">
+                <input id="password" type="password" placeholder="密码">
+            </div>
+            <div class="controls">
+                <span class="help-inline">不超过16位长度</span>
+            </div>
+        </div>
+        <div class="control-group muted">
+            <label class="control-label" for="verifyCode">验证码</label>
+            <div class="controls">
+                <input id="verifyCode" type="text" placeholder="验证码">
+                <img id="verifyCodeImg" width="80" height="30" onclick="refreshVerifyCode()"/>
+                <span class="help-inline">输入算式结果</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-large btn-primary" type="submit" onclick="regist()">注册</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script>
+    $(document).ready(
+        function () {
+            $("#verifyCodeImg").attr("src","/operation/verifyCode?verifyValue=verifyValue&time="+new Date().toString());
+        }
+    );
+    function refreshVerifyCode(){
+        $("#verifyCodeImg").attr("src","/operation/verifyCode?verifyValue=verifyValue&time="+new Date().toString());
+    }
+    function regist() {
+        $("#loginForm").validate({
+            submitHandler:function(form){
+                doRegist();
+            }
+        });
+    }
+    function doRegist() {
+        var userAccount=$("#userAccount").val();
+        if(!(/^1[34578]\d{9}$/.test(userAccount))){
+            alert("不合法手机号，请重新输入");
+            window.location.reload();
+        }else {
+            $.ajax({
+                url:"/operation/regist",
+                type:"post",
+                data:{
+                    userAccount:userAccount,
+                    password:$("#password").val(),
+                    verifyCode:$("#verifyCode").val(),
+                },
+                success:function (data) {
+                    if (data.code==0){
+                        alert("注册成功");
+                        to_login();
+                    }else{
+                        alert(data.message);
+                        refreshVerifyCode();
+                    }
+                },
+                error:function () {
+                    alert("失败");
+                }
+            });
+        }
+    }
+    function to_login() {
+        window.location.href="/operation/to_login";
+    }
+</script>
+</html>

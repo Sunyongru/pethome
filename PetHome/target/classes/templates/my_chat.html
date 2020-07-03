@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html;charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+</head>
+<body onload="connect()">
+    <span id="target"></span>
+    <div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+    <div id="fromUImg" class="hide-text" th:text="${fromUser.userImg}"></div>
+    <div id="toUImg" class="hide-text" th:text="${toUser.userImg}"></div>
+    <div class="navbar navbar-inverse">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="brand" >宠物之家</a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
+                        <li><a href="/pethome/index">首页</a></li>
+                        <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                        <li><a href="/help/helpCare/my">我要帮养</a></li>
+                    </ul>
+                    <div class="pull-right">
+                        <div th:unless="${flag}">
+                            <ul class="nav">
+                                <a><button class="btn" onclick="to_regist()">注册</button></a>
+                                <button class="btn" onclick="to_login()">登录</button>
+                            </ul>
+                        </div>
+                        <div th:if="${flag}">
+                            <ul class="nav">
+                                <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span id="unRead" class="badge badge-important"></span></a></li>
+                                <a><button class="btn" onclick="to_exit()">退出</button></a>
+                            </ul>
+                        </div>
+                    </div>
+                </div><!--/.nav-collapse -->
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="span12 well">
+            <div class="header-panel">
+                <button type="button" class="close" data-dismiss="alert" onclick="disconnect()">×</button>
+                <img class="img-rounded" th:src="@{${toUser.userImg}}" width="50" style="height: 50px">
+                <span th:text="${toUser.userName}"></span>
+                <div id="toUserAccount" class="hide-text" th:text="${toUser.userAccount}"></div>
+            </div>
+            <hr/>
+            <div class="row">
+                <ul id="chatPanel" class="unstyled well" style="height: 400px;overflow: auto">
+                    <a class="offset4">查看历史消息</a>
+                </ul>
+            </div>
+            <hr/>
+            <div class="row offset1">
+                <textarea id="inputArea" class="span10" rows="3"></textarea>
+                <button class="btn pull-right" type="button" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function to_exit() {
+        $.ajax({
+            url:"/pethome/exit",
+            success:function (data) {
+                if (data.code==0){
+                    window.location.href="/pethome/index"
+                }
+            }
+        })
+    }
+    var stompClient = null;
+
+    $(function () {
+        var target = $("#target");
+        if (window.location.protocol === 'http:') {
+            target.val('http://' + window.location.host + "/chat-websocket");
+        } else {
+            target.val('https://' + window.location.host + "/chat-websocket");
+        }
+    });
+
+
+    //连接
+    function connect() {
+        var target = $("#target").val();
+
+        var ws = new SockJS(target);
+        stompClient = Stomp.over(ws);
+
+        stompClient.connect({}, function () {
+            log('Info: STOMP connection opened.');
+
+            //连接成功后，主动拉取未读消息
+            pullUnreadMessage("/topic/reply");
+
+            $.ajax(queryUnRead);
+            //订阅服务端的/topic/reply地址
+            stompClient.subscribe("/user/topic/reply", function (response) {
+                var x=JSON.parse(response.body).content;
+                var fromUser=x.substr(0,11);
+                var msg=x.substr(17);
+                log(JSON.parse(response.body).content);
+                var html='';
+                var src=$("#toUImg").text();
+                html+='<div class="row"><li class="offset1 span8"><div class="span1"><img class="img-circle" width="30" style="height: 30px" src='+src+'></div><div class="span6"><p class="pull-left alert alert-info">'+msg+'</p></div></li></div>';
+                $("#chatPanel").append(html);
+                $("#chatPanel").scrollTop($("#chatPanel")[0].scrollHeight);
+            })
+        },function () {
+            //断开处理
+            log('Info: STOMP connection closed.');
+        });
+    }
+
+    //断开连接
+    function disconnect() {
+        if (stompClient != null) {
+            stompClient.disconnect();
+            stompClient = null;
+        }
+        log('Info: STOMP connection closed.');
+        self.location=document.referrer;
+    }
+
+    //向指定用户发送消息
+    function sendMessage() {
+        if (stompClient != null) {
+            var receiver = $("#toUserAccount").text();
+            var msg = $("#inputArea").val();
+            log('Sent: ' + JSON.stringify({'receiver': receiver, 'msg':msg}));
+            $("#inputArea").val("");
+            $.ajax({
+                url: "/wsTemplate/sendToUser",
+                type: "POST",
+                data: {
+                    "receiver": receiver,
+                    "msg": msg
+                },
+                success: function (data) {
+                    var html="";
+                    var src=$("#fromUImg").text();
+                    html+='<div class="row"><li class="pull-right offset1 span8"><div class="span6"><p class="pull-right alert">'+msg+'</p></div><div class="span1"><img class="img-circle pull-right" width="30" style="height: 30px" src='+src+'></div></li></div>';
+                    $("#chatPanel").append(html);
+                    $("#chatPanel").scrollTop($("#chatPanel")[0].scrollHeight);
+                }
+            });
+        } else {
+            layer.msg('STOMP connection not established, please connect.', {
+                offset: 'auto'
+                ,icon: 2
+            });
+        }
+    }
+
+    //从服务器拉取未读消息
+    function pullUnreadMessage(destination) {
+        $.ajax({
+            url: "/wsTemplate/pullUnreadMessage",
+            type: "POST",
+            dataType: "json",
+            async: true,
+            data: {
+                "destination": destination,
+                "fromUser":$("#toUserAccount").text(),
+            },
+            success: function (data) {
+                if (data.result != null) {
+                    $.each(data.result, function (i, item) {
+                        log(JSON.parse(item).content);
+                        var x=JSON.parse(item).content;
+                        var fromUser=x.substr(0,11);
+                        var msg=x.substr(17);
+                        var html="";
+                        var src=$("#toUImg").text();
+                        html+='<div class="row"><li class="offset1 span8"><div class="span1"><img class="img-circle" width="30" style="height: 30px" src='+src+'></div><div class="span6"><p class="pull-left alert alert-info">'+msg+'</p></div></li></div>';
+                        $("#chatPanel").append(html);
+                        $("#chatPanel").scrollTop($("#chatPanel")[0].scrollHeight);
+                    })
+                } else if (data.code !=null && data.code == "500") {
+                    layer.msg(data.msg, {
+                        offset: 'auto'
+                        ,icon: 2
+                    });
+                }
+            }
+        });
+    }
+
+    //日志输出
+    function log(message) {
+        console.debug(message);
+    }
+    window.setInterval(function () {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    },1000*60)
+    var queryUnRead={
+        url:"/operation/getUnRead/"+$("#userAccount").text(),
+        success:function (data) {
+            if (data>0&&data<100){
+                $("#unRead").text(data);
+            }
+            if (data>100){
+                $("#unRead").text("99+");
+            }
+        }
+    }
+    function isEmpty(){
+        var userAccount=$("#userAccount").text();
+        if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+            return true;
+        }else{
+            return false;
+        }
+    }
+</script>
+</html>

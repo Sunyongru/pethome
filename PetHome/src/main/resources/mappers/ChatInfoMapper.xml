@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itsun.dao.ChatInfoMapper">
+  <resultMap id="BaseResultMap" type="com.itsun.entity.ChatInfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="chat_room_id" jdbcType="INTEGER" property="chatRoomId" />
+    <result column="from_user" jdbcType="VARCHAR" property="fromUser" />
+    <result column="to_user" jdbcType="VARCHAR" property="toUser" />
+    <result column="un_read_msg" jdbcType="INTEGER" property="unReadMsg" />
+    <result column="creat_date" jdbcType="TIMESTAMP" property="creatDate" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, chat_room_id, from_user, to_user, un_read_msg, creat_date
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from chat_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectByFATUserAccount" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from chat_info
+    where from_user = #{sender,jdbcType=VARCHAR}
+    and to_user=#{receiver,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByToUser" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from chat_info
+    where to_user=#{receiver,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from chat_info
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.itsun.entity.ChatInfo" keyProperty="id" useGeneratedKeys="true">
+    insert into chat_info (id, chat_room_id, from_user, 
+      to_user, un_read_msg, creat_date
+      )
+    values (#{id,jdbcType=INTEGER}, #{chatRoomId,jdbcType=INTEGER}, #{fromUser,jdbcType=VARCHAR}, 
+      #{toUser,jdbcType=VARCHAR}, #{unReadMsg,jdbcType=INTEGER}, #{creatDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.itsun.entity.ChatInfo" keyProperty="id" useGeneratedKeys="true">
+    insert into chat_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="chatRoomId != null">
+        chat_room_id,
+      </if>
+      <if test="fromUser != null">
+        from_user,
+      </if>
+      <if test="toUser != null">
+        to_user,
+      </if>
+      <if test="unReadMsg != null">
+        un_read_msg,
+      </if>
+      <if test="creatDate != null">
+        creat_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="chatRoomId != null">
+        #{chatRoomId,jdbcType=INTEGER},
+      </if>
+      <if test="fromUser != null">
+        #{fromUser,jdbcType=VARCHAR},
+      </if>
+      <if test="toUser != null">
+        #{toUser,jdbcType=VARCHAR},
+      </if>
+      <if test="unReadMsg != null">
+        #{unReadMsg,jdbcType=INTEGER},
+      </if>
+      <if test="creatDate != null">
+        #{creatDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.itsun.entity.ChatInfo">
+    update chat_info
+    <set>
+      <if test="chatRoomId != null">
+        chat_room_id = #{chatRoomId,jdbcType=INTEGER},
+      </if>
+      <if test="fromUser != null">
+        from_user = #{fromUser,jdbcType=VARCHAR},
+      </if>
+      <if test="toUser != null">
+        to_user = #{toUser,jdbcType=VARCHAR},
+      </if>
+      <if test="unReadMsg != null">
+        un_read_msg = #{unReadMsg,jdbcType=INTEGER},
+      </if>
+      <if test="creatDate != null">
+        creat_date = #{creatDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.itsun.entity.ChatInfo">
+    update chat_info
+    set chat_room_id = #{chatRoomId,jdbcType=INTEGER},
+      from_user = #{fromUser,jdbcType=VARCHAR},
+      to_user = #{toUser,jdbcType=VARCHAR},
+      un_read_msg = #{unReadMsg,jdbcType=INTEGER},
+      creat_date = #{creatDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="setUnreadMsg" parameterType="com.itsun.entity.ChatInfo">
+    update chat_info
+    set
+      un_read_msg =  un_read_msg+1
+    where from_user = #{sender,jdbcType=VARCHAR}
+    and to_user=#{receiver,jdbcType=VARCHAR}
+  </update>
+  <update id="delUnreadMsg" parameterType="com.itsun.entity.ChatInfo">
+    update chat_info
+    set
+      un_read_msg = 0
+    where from_user = #{sender,jdbcType=VARCHAR}
+    and to_user=#{receiver,jdbcType=VARCHAR}
+  </update>
+</mapper>

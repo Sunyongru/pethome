@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itsun.dao.HelpCareMapper">
+  <resultMap id="BaseResultMap" type="com.itsun.entity.HelpCare">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_account" jdbcType="VARCHAR" property="userAccount" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="pet_type" jdbcType="VARCHAR" property="petType" />
+    <result column="date_type" jdbcType="VARCHAR" property="dateType" />
+    <result column="money" jdbcType="VARCHAR" property="money" />
+    <result column="describetion" jdbcType="VARCHAR" property="describetion" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="area" jdbcType="VARCHAR" property="area" />
+    <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_account, title, pet_type, date_type, money, describetion, province, city, 
+    area, create_date
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from help_care
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAllHelpInfo" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from help_care
+    order by create_date desc
+  </select>
+  <select id="selectAllHelpInfoByUserAccount" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from help_care
+    where user_account=#{userAccount,jdbcType=VARCHAR}
+    order by create_date desc
+  </select>
+  <select id="selectInfoByPet" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from help_care
+    where pet_type=#{petType,jdbcType=VARCHAR}
+    order by create_date desc
+  </select>
+  <select id="selectInfoByPetTypeAndPro" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from help_care
+    where pet_type=#{petType,jdbcType=VARCHAR}
+    and province=#{province,jdbcType=VARCHAR}
+    order by create_date desc
+  </select>
+  <select id="selectInfoByPetTypeAndProAndCt" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from help_care
+    where pet_type=#{petType,jdbcType=VARCHAR}
+    and province=#{province,jdbcType=VARCHAR}
+    and city=#{city,jdbcType=VARCHAR}
+    order by create_date desc
+  </select>
+  <select id="selectInfoByPetTypeAndProAndCtAndAr" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from help_care
+    where  province = #{province,jdbcType=VARCHAR}
+    and  city = #{city,jdbcType=VARCHAR}
+    and  area = #{area,jdbcType=VARCHAR}
+    and  pet_type = #{petType,jdbcType=VARCHAR}
+    order by create_date desc
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from help_care
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.itsun.entity.HelpCare">
+    insert into help_care (id, user_account, title, 
+      pet_type, date_type, money, 
+      describetion, province, city, 
+      area, create_date)
+    values (#{id,jdbcType=INTEGER}, #{userAccount,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, 
+      #{petType,jdbcType=VARCHAR}, #{dateType,jdbcType=VARCHAR}, #{money,jdbcType=VARCHAR}, 
+      #{describetion,jdbcType=VARCHAR}, #{province,jdbcType=VARCHAR}, #{city,jdbcType=VARCHAR}, 
+      #{area,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.itsun.entity.HelpCare">
+    insert into help_care
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="userAccount != null">
+        user_account,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="petType != null">
+        pet_type,
+      </if>
+      <if test="dateType != null">
+        date_type,
+      </if>
+      <if test="money != null">
+        money,
+      </if>
+      <if test="describetion != null">
+        describetion,
+      </if>
+      <if test="province != null">
+        province,
+      </if>
+      <if test="city != null">
+        city,
+      </if>
+      <if test="area != null">
+        area,
+      </if>
+      <if test="createDate != null">
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userAccount != null">
+        #{userAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="petType != null">
+        #{petType,jdbcType=VARCHAR},
+      </if>
+      <if test="dateType != null">
+        #{dateType,jdbcType=VARCHAR},
+      </if>
+      <if test="money != null">
+        #{money,jdbcType=VARCHAR},
+      </if>
+      <if test="describetion != null">
+        #{describetion,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null">
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null">
+        #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.itsun.entity.HelpCare">
+    update help_care
+    <set>
+      <if test="userAccount != null">
+        user_account = #{userAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="petType != null">
+        pet_type = #{petType,jdbcType=VARCHAR},
+      </if>
+      <if test="dateType != null">
+        date_type = #{dateType,jdbcType=VARCHAR},
+      </if>
+      <if test="money != null">
+        money = #{money,jdbcType=VARCHAR},
+      </if>
+      <if test="describetion != null">
+        describetion = #{describetion,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null">
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        city = #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null">
+        area = #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.itsun.entity.HelpCare">
+    update help_care
+    set user_account = #{userAccount,jdbcType=VARCHAR},
+      title = #{title,jdbcType=VARCHAR},
+      pet_type = #{petType,jdbcType=VARCHAR},
+      date_type = #{dateType,jdbcType=VARCHAR},
+      money = #{money,jdbcType=VARCHAR},
+      describetion = #{describetion,jdbcType=VARCHAR},
+      province = #{province,jdbcType=VARCHAR},
+      city = #{city,jdbcType=VARCHAR},
+      area = #{area,jdbcType=VARCHAR},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

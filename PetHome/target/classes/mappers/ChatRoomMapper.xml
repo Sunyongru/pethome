@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itsun.dao.ChatRoomMapper">
+  <resultMap id="BaseResultMap" type="com.itsun.entity.ChatRoom">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="chat_name" jdbcType="VARCHAR" property="chatName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, chat_name
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from chat_room
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectChatNameByPrimaryKey" parameterType="java.lang.Integer" resultType="java.lang.String">
+    select
+    chat_name
+    from chat_room
+    where id = #{chatRoomId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from chat_room
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.itsun.entity.ChatRoom" keyProperty="id" useGeneratedKeys="true">
+    insert into chat_room (id, chat_name)
+    values (#{id,jdbcType=INTEGER}, #{chatName,jdbcType=VARCHAR})
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      select last_insert_id()
+    </selectKey>
+  </insert>
+  <insert id="insertSelective" parameterType="com.itsun.entity.ChatRoom" keyProperty="id" useGeneratedKeys="true">
+    insert into chat_room
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="chatName != null">
+        chat_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="chatName != null">
+        #{chatName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      select last_insert_id()
+    </selectKey>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.itsun.entity.ChatRoom">
+    update chat_room
+    <set>
+      <if test="chatName != null">
+        chat_name = #{chatName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.itsun.entity.ChatRoom">
+    update chat_room
+    set chat_name = #{chatName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

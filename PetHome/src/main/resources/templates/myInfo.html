@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>个人信息</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <link type="text/css" th:src="@{/bootstrap/css/pethome.css}"/>
+</head>
+<body onload="queryUn()">
+<div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" >宠物之家</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li><a href="/pethome/index">首页</a></li>
+                    <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                    <li><a href="/help/helpCare/my">我要帮养</a></li>
+                </ul>
+                <div class="pull-right">
+                    <div th:unless="${flag}">
+                        <ul class="nav">
+                            <a><button class="btn" onclick="to_regist()">注册</button></a>
+                            <button class="btn" onclick="to_login()">登录</button>
+                        </ul>
+                    </div>
+                    <div th:if="${flag}">
+                        <ul class="nav">
+                            <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span class="badge badge-important unRead"></span></a></li>
+                            <a><button class="btn" onclick="to_exit()">退出</button></a>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="span3">
+            <ul class="nav nav-stacked nav-pills">
+                <li class="active">
+                    <a th:href="'/user/userInfo/'+${userAccount}"><i class="icon-user"></i>个人信息</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myFoster/'+${userAccount}"><i class="icon-file"></i>寄养发布</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myHelp/'+${userAccount}"><i class="icon-file"></i>帮养发布</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myChat/'+${userAccount}"><i class="icon-envelope"></i>我的消息<span class="badge badge-important unRead"></span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="span9">
+            <ul class="span9 breadcrumb">
+                <li>
+                    <a th:href="'/user/userInfo/'+${userAccount}">个人信息</a>
+                </li>
+            </ul>
+            <div class="span9">
+                <div class="span2">
+                    <img th:src="@{${userVo.userImg}}" class="img-circle" width="100" style="height: 100px">
+                </div>
+                <div class="span3">
+                    <div class="row">
+                        <h4 class="text-primary" th:text="${userVo.userName}?:'未设置昵称'"></h4>
+                    </div>
+                    <div class="row">
+                        <label class="pull-left"><i class="icon-globe"></i>地区：</label>
+                        <label class="pull-left" th:text="${userVo.province eq '未选择'?'':userVo.province}+${userVo.city eq '未选择'?'':userVo.city}+${userVo.area eq '未选择'?'':userVo.area}"></label>
+                    </div>
+                    <div class="row">
+                        <label class="pull-left"><i class="icon-book"></i>联系电话：</label>
+                        <label class="pull-left" th:text="${userVo.phoneNum}?:${userAccount}"></label>
+                    </div>
+                </div>
+                <div class="pull-right">
+                    <button class="btn btn-primary" onclick="detailedInfo()">详细资料</button>
+                    <button class="btn btn-primary" onclick="modifyInfo()">修改资料</button>
+                </div>
+            </div>
+            <div class="span9">
+                <hr/>
+            </div>
+            <div id="detailedInfo" class="span9 muted" hidden>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>账号</th>
+                        <td th:text="${userAccount}"></td>
+                    </tr>
+                    <tr>
+                        <th>头像</th>
+                        <td>
+                            <img th:alt="140*140" th:src="@{${userVo.userImg}}" class="center-block img-circle" width="100" style="height: 100px">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>昵称</th>
+                        <td th:text="${userVo.userName}?:'未设置昵称'"></td>
+                    </tr>
+                    <tr>
+                        <th >所在省</th>
+                        <td th:text="${userVo.province}?:'未填写所在省'"></td>
+                    </tr>
+                    <tr>
+                        <th >所在市</th>
+                        <td th:text="${userVo.city}?:'未填写所在市'"></td>
+                    </tr>
+                    <tr>
+                        <th >所在区县</th>
+                        <td th:text="${userVo.area}?:'未填写所在区县'"></td>
+                    </tr>
+                    <tr>
+                        <th >详细地址</th>
+                        <td th:text="${userVo.address}?:'未填写详细地址'"></td>
+                    </tr>
+                    <tr>
+                        <th>联系电话</th>
+                        <td th:text="${userVo.phoneNum}?:${userAccount}"></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="modifyInfo" class="span9" hidden>
+                <form class="form-horizontal">
+                    <div class="control-group">
+                        <label class="control-label" for="inputUserImg">头像</label>
+                        <div class="controls">
+                            <input type="hidden" id="imgUrl" th:value="${userVo.userImg}">
+                            <img id="inputUserImg" th:alt="140x140" th:src="@{${userVo.userImg}}" class="center-block img-circle" width="100" style="height: 100px">
+                            <input type="file" accept="image/*" id="inputImg" onchange="changeImg()" formenctype="multipart/form-data">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="inputAccount">账号</label>
+                        <div class="controls">
+                            <input type="text" id="inputAccount" th:value="${userAccount}" disabled>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="inputName">昵称</label>
+                        <div class="controls">
+                            <input type="text" id="inputName" th:value="${userVo.userName}?:'未设置昵称'">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="selectProvince">所在省</label>
+                        <div class="controls">
+                            <input id="provinceInput" type="text" th:value="${userVo.province}?:'未选择'" disabled>
+                            <select id="selectProvince" onchange="changeProvince()">
+                                <option value="">请选择省</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="selectCity">所在市</label>
+                        <div class="controls">
+                            <input id="cityInput" type="text" th:value="${userVo.city}?:'未选择'" disabled>
+                            <select id="selectCity" onchange="changeCity()">
+                                <option value="">请选择市</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="selectArea">所在县区</label>
+                        <div class="controls">
+                            <input id="areaInput" type="text" th:value="${userVo.area}?:'未选择'" disabled>
+                            <select id="selectArea" onchange="changeArea()">
+                                <option value="">请选择县区</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="inputAddress">地址</label>
+                        <div class="controls">
+                            <input type="text" id="inputAddress" th:value="${userVo.address}?:'未填写'">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="inputPhone">联系方式</label>
+                        <div class="controls">
+                            <input type="text" id="inputPhone" th:value="${userVo.phoneNum}?:${userAccount}">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="button" class="btn btn-primary" onclick="modifyMyinfo()">修改</button>
+                            <button class="btn">返回</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    function to_regist() {
+        window.location.href="/operation/to_regist"
+    }
+
+    function to_login() {
+        window.location.href="/operation/to_login";
+    }
+
+    function to_exit() {
+        $.ajax({
+            url:"/pethome/exit",
+            success:function (data) {
+                if (data.code==0){
+                    window.location.href="/pethome/index"
+                }
+            }
+        })
+    }
+    function detailedInfo() {
+        $("#modifyInfo").hide();
+        $("#detailedInfo").show();
+    }
+    function modifyInfo() {
+        $("#detailedInfo").hide();
+        $.ajax({
+            url:"/operation/getProvince",
+            success:function (data) {
+                if (!data) return;
+                var html="";
+                for (var i=0;i<data.data.length;i++){
+                    html+='<option value='+data.data[i].provinceId+'>'+data.data[i].province+'</option>';
+                }
+                $("#selectProvince").append(html);
+            }
+        });
+        $("#modifyInfo").show();
+    }
+    function changeProvince() {
+        $("#provinceInput").val($("#selectProvince option:selected").html());
+        $("#cityInput").val("未选择");
+        $("#areaInput").val("未选择");
+        var pid=$("#selectProvince").val();
+        $.ajax({
+            url:"/operation/getCity/"+pid,
+            success:function (data) {
+                if (!data) return;
+                $("#selectCity").html("<option value=''>请选择市</option>");
+                $("#selectArea").html("<option value=''>请选择县区</option>");
+                var html="";
+                for (var i=0;i<data.data.length;i++){
+                    html+='<option value='+data.data[i].cityId+'>'+data.data[i].city+'</option>';
+                }
+                $("#selectCity").append(html);
+            }
+        });
+    }
+    function changeCity() {
+        $("#cityInput").val($("#selectCity option:selected").html());
+        $("#areaInput").val("未选择");
+        var cid=$("#selectCity").val();
+        $.ajax({
+            url:"/operation/getArea/"+cid,
+            success:function (data) {
+                if (!data) return;
+                $("#selectArea").html("<option value=''>请选择区县</option>");
+                var html="";
+                for (var i=0;i<data.data.length;i++){
+                    html+='<option value='+data.data[i].areaId+'>'+data.data[i].area+'</option>';
+                }
+                $("#selectArea").append(html);
+            }
+        });
+    }
+
+    function changeArea() {
+        $("#areaInput").val($("#selectArea option:selected").html());
+    }
+
+    function changeImg() {
+        var formData=new FormData();
+        formData.append("image",$("#inputImg")[0].files[0]);
+        $.ajax({
+            url:"/image/imageUpload",
+            data:formData,
+            type:"post",
+            processData: false,
+            contentType: false,
+            success:function (data) {
+                $("#inputUserImg").attr("src",data.data);
+                $("#imgUrl").val(data.data);
+            }
+        });
+    }
+
+    function modifyMyinfo() {
+        $.ajax({
+            url:"/user/modify",
+            type:"post",
+            async:false,
+            data:{
+                userAccount:$("#inputAccount").val(),
+                userImg:$("#imgUrl").val(),
+                userName:$("#inputName").val(),
+                province:$("#provinceInput").val(),
+                city:$("#cityInput").val(),
+                area:$("#areaInput").val(),
+                address:$("#inputAddress").val(),
+                phoneNum:$("#inputPhone").val(),
+            },
+            success:function (data) {
+                if (data.code==0){
+                    alert("修改成功");
+                    location.reload();
+                }else{
+                    alert(data.message);
+                }
+            },
+            error:function () {
+                layer.msg("失败");
+            }
+        });
+    }
+    window.setInterval(function () {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    },1000*60)
+    var queryUnRead={
+        url:"/operation/getUnRead/"+$("#userAccount").text(),
+        success:function (data) {
+            if (data>0&&data<100){
+                $("#unRead").text(data);
+            }
+            if (data>100){
+                $("#unRead").text("99+");
+            }
+        }
+    }
+    function queryUn() {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    }
+    function isEmpty(){
+        var userAccount=$("#userAccount").text();
+        if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+            return true;
+        }else{
+            return false;
+        }
+    }
+</script>
+</html>

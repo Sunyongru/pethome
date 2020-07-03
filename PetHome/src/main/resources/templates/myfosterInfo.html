@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>寄养发布</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <link type="text/css" th:src="@{/bootstrap/css/pethome.css}"/>
+</head>
+<body onload="queryUn()">
+<div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" >宠物之家</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li><a href="/pethome/index">首页</a></li>
+                    <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                    <li><a href="/help/helpCare/my">我要帮养</a></li>
+                </ul>
+                <div class="pull-right">
+                    <div th:unless="${flag}">
+                        <ul class="nav">
+                            <a><button class="btn" onclick="to_regist()">注册</button></a>
+                            <button class="btn" onclick="to_login()">登录</button>
+                        </ul>
+                    </div>
+                    <div th:if="${flag}">
+                        <ul class="nav">
+                            <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span class="badge badge-important unRead"></span></a></li>
+                            <a><button class="btn" onclick="to_exit()">退出</button></a>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="span3">
+            <ul class="nav nav-stacked nav-pills">
+                <li >
+                    <a th:href="'/user/userInfo/'+${userAccount}"><i class="icon-user"></i>个人信息</a>
+                </li>
+                <li class="active">
+                    <a th:href="'/user/myFoster/'+${userAccount}"><i class="icon-file"></i>寄养发布</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myHelp/'+${userAccount}"><i class="icon-file"></i>帮养发布</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myChat/'+${userAccount}"><i class="icon-envelope"></i>我的消息<span class="badge badge-important unRead"></span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="span9">
+            <ul class="span9 breadcrumb">
+                <li>
+                    <a th:href="'/user/myFoster/'+${userAccount}">寄养发布</a>
+                </li>
+            </ul>
+            <div class="span9" th:each="myFoster:${myFosterList}">
+                <span id="fosterId" th:text="${myFoster.id}" hidden></span>
+                <hr/>
+                <div class="span2">
+                    <img  th:src="@{${myFoster.petImg}}" class="img-rounded" width="100" style="height:100px">
+                </div>
+                <div class="span4">
+                    <div class="row">
+                        <h5 th:text="${myFoster.title}"></h5>
+                        <h6 class="text-error">报酬：<span th:text="${myFoster.money}"></span></h6>
+                        <span class="text-info">寄养时间:<span th:text="${myFoster.dateType}"></span></span>
+                        <span>&emsp;</span>
+                        <span class="text-success">地区：<span th:text="${myFoster.province}+'/'+${myFoster.city}"></span></span>
+                    </div>
+                </div>
+                <div class="span2 pull-right">
+                    <a th:if="${flag}"><button type="button" class="btn btn-primary"th:onclick="'javascript:to_detail('+${myFoster.id}+')'">详情</button></a>
+                    <a th:unless="${flag}" th:href="'/foster/fosterdetails/'+${myFoster.id}"><button type="button" class="btn btn-primary">详情</button></a>
+                    <button type="button" class="btn btn-danger" onclick="deleteInfo()">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    //th:href="'/foster/fosterdetails/'+${myFoster.id}"
+    function to_detail(id) {
+       var thisURL=window.document.location.pathname;
+       var userAccount=$("#userAccount").text();
+        $.ajax({
+                url:"/operation/setLastURL",
+                data:{
+                    lastURL:thisURL,
+                    user:userAccount
+                },
+                success:function () {
+                    window.location.href="/foster/fosterdetails/"+id;
+                }
+            })
+    }
+    function to_exit() {
+        $.ajax({
+            url:"/pethome/exit",
+            success:function (data) {
+                if (data.code==0){
+                    window.location.href="/pethome/index"
+                }
+            }
+        })
+    }
+    function deleteInfo() {
+        var fosterId=$("#fosterId").text();
+        $.ajax({
+            url:"/foster/delete/"+fosterId,
+            success:function (data) {
+                if (data.code==0){
+                    alert("删除成功");
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            }
+        })
+    }
+    window.setInterval(function () {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    },1000*60)
+    var queryUnRead={
+        url:"/operation/getUnRead/"+$("#userAccount").text(),
+        success:function (data) {
+            if (data>0&&data<100){
+                $("#unRead").text(data);
+            }
+            if (data>100){
+                $("#unRead").text("99+");
+            }
+        }
+    }
+    function queryUn() {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    }
+    function isEmpty(){
+        var userAccount=$("#userAccount").text();
+        if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+            return true;
+        }else{
+            return false;
+        }
+    }
+</script>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>寄养发布</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <link type="text/css" th:src="@{/bootstrap/css/pethome.css}"/>
+    <style type="text/css">
+        .chatname{
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body onload="queryUn()">
+<div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" >宠物之家</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li><a href="/pethome/index">首页</a></li>
+                    <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                    <li><a href="/help/helpCare/my">我要帮养</a></li>
+                </ul>
+                <div class="pull-right">
+                    <div th:unless="${flag}">
+                        <ul class="nav">
+                            <a><button class="btn" onclick="to_regist()">注册</button></a>
+                            <button class="btn" onclick="to_login()">登录</button>
+                        </ul>
+                    </div>
+                    <div th:if="${flag}">
+                        <ul class="nav">
+                            <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span class="badge badge-important unRead"></span></a></li>
+                            <a><button class="btn" onclick="to_exit()">退出</button></a>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+<div class="container">
+    <span id="target"></span>
+    <div class="row">
+        <div class="span3">
+            <ul class="nav nav-stacked nav-pills">
+                <li>
+                    <a th:href="'/user/userInfo/'+${userAccount}"><i class="icon-user"></i>个人信息</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myFoster/'+${userAccount}"><i class="icon-file"></i>寄养发布</a>
+                </li>
+                <li>
+                    <a th:href="'/user/myHelp/'+${userAccount}"><i class="icon-file"></i>帮养发布</a>
+                </li>
+                <li class="active">
+                    <a th:href="'/user/myChat/'+${userAccount}"><i class="icon-envelope"></i>我的消息<span class="badge badge-important unRead"></span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="span9">
+            <ul class="span9 breadcrumb">
+                <li>
+                    <a th:href="'/user/myChat/'+${userAccount}">我的消息<span id="unRead" class="badge badge-important"></span></a>
+                </li>
+            </ul>
+            <div class="span9" style="height: 500px;">
+                <ul class="unstyled">
+                    <li  class="btn span4 chatList" th:each="chatUser:${chatUserVolist}">
+                        <span id="chatUser" th:href="'#'+${chatUser.chatUser}">
+                            <img th:src="@{${chatUser.chatUserImg}}" class="img-rounded pull-left" width="40" style="height: 40px">
+                            <h5 id="userName" th:text="${chatUser.chatUserName}" class="chatname pull-left"></h5>
+                            <div th:if="${chatUser.unReadMsg gt 0}">
+                                <span class="badge badge-important pull-right" th:text="${chatUser.unReadMsg}"></span>
+                            </div>
+                        </span>
+                    </li>
+                </ul>
+             </div>
+         </div>
+     </div>
+ </div>
+ </body>
+ <script>
+     function to_exit() {
+         $.ajax({
+             url:"/pethome/exit",
+             success:function (data) {
+                 if (data.code==0){
+                     window.location.href="/pethome/index"
+                 }
+             }
+         })
+     }
+
+     $(".chatList").on('click',function () {
+         var href=$(this).find("span").attr('href');
+         var userAccount=href.substr(1);
+         window.location.href="/user/my_chat/"+userAccount;
+     })
+     window.setInterval(function () {
+         if(!isEmpty()){
+             $.ajax(queryUnRead)
+         }
+     },1000*60)
+     var queryUnRead={
+         url:"/operation/getUnRead/"+$("#userAccount").text(),
+         success:function (data) {
+             if (data>0&&data<100){
+                 $("#unRead").text(data);
+             }
+             if (data>100){
+                 $("#unRead").text("99+");
+             }
+         }
+     }
+     function queryUn() {
+         if(!isEmpty()){
+             $.ajax(queryUnRead)
+         }
+     }
+     function isEmpty(){
+         var userAccount=$("#userAccount").text();
+         if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+             return true;
+         }else{
+             return false;
+         }
+     }
+ </script>
+ </html>

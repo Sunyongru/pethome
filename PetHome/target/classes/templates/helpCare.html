@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>帮养</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+</head>
+<body onload="queryUn()">
+<div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" >宠物之家</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li><a href="/pethome/index">首页</a></li>
+                    <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                    <li class="active"><a href="/help/helpCare/my">我要帮养</a></li>
+                </ul>
+                <div class="pull-right">
+                    <div th:unless="${flag}">
+                        <ul class="nav">
+                            <a><button class="btn" onclick="to_regist()">注册</button></a>
+                            <button class="btn" onclick="to_login()">登录</button>
+                        </ul>
+                    </div>
+                    <div th:if="${flag}">
+                        <ul class="nav">
+                            <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span id="unRead" class="badge badge-important"></span></a></li>
+                            <a><button class="btn" onclick="to_exit()">退出</button></a>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="span12">
+        <div class="span9">
+            <div class="row">
+                <div class="span4">
+                    <ul class="nav nav-pills">
+                        <li class="dropdown" onclick="loadQProvince()">
+                            <a class="dropdown-toggle"
+                               data-toggle="dropdown"
+                               href="#">
+                                省份
+                                <b class="caret"></b>
+                            </a>
+                            <ul id="qProvince" class="dropdown-menu">
+                            </ul>
+                        </li>
+                        <li><a th:text="${province}"></a><span id="qProvinceLink" th:text="${p_path}"hidden></span></li>
+                    </ul>
+                </div>
+                <div class="span4">
+                    <ul class="nav nav-pills">
+                        <li class="dropdown" onclick="loadQCity()">
+                            <a class="dropdown-toggle"
+                               data-toggle="dropdown"
+                               href="#">
+                                城市
+                                <b class="caret"></b>
+                            </a>
+                            <ul id="qCity" class="dropdown-menu">
+                            </ul>
+                        </li>
+                        <li><a th:text="${city}"></a><span id="qCityLink" th:text="${c_path}" hidden></span></li>
+                    </ul>
+                </div>
+                <div class="span4">
+                    <ul class="nav nav-pills">
+                        <li class="dropdown" onclick="loadQArea()">
+                            <a class="dropdown-toggle"
+                               data-toggle="dropdown"
+                               href="#">
+                                地区
+                                <b class="caret"></b>
+                            </a>
+                            <ul id="qArea" class="dropdown-menu">
+                            </ul>
+                        </li>
+                        <li><a th:text="${area}"></a><span id="qAreaLink" th:text="${a_path}" hidden></span></li>
+                    </ul>
+                </div>
+                <div class="span4">
+                    <ul class="nav nav-pills">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle"
+                               data-toggle="dropdown"
+                               href="#">
+                                宠物类型
+                                <b class="caret"></b>
+                            </a>
+                            <ul id="qPetType" class="dropdown-menu" onclick="selectPet()">
+                                <li ><a id="my" th:href="@{'/help/helpCare/my'+${qp}}">不限</a></li>
+                                <li ><a id="p0" th:href="@{'/help/helpCare/p0'+${qp}}">猫类</a></li>
+                                <li ><a id="p1" th:href="@{'/help/helpCare/p1'+${qp}}">犬类</a></li>
+                                <li ><a id="p2" th:href="@{'/help/helpCare/p2'+${qp}}">水生类</a></li>
+                                <li ><a id="p3" th:href="@{'/help/helpCare/p3'+${qp}}">其他类</a></li>
+                            </ul>
+                        </li>
+                        <li><a th:text="${petType}"></a><span id="qPetTypeLink" th:text="${path}" hidden></span></li>
+                        <li class="pull-right"><a href="/help/helpCare/my">重置选项</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="span2">
+            <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#addhelp" onclick="chooseOne()">添加发布</button>
+        </div>
+    </div>
+    <div class="modal fade" id="addhelp" aria-hidden="true" hidden>
+        <div class="modal-header">
+            <h4>在这里添加帮养信息</h4>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal center-pill">
+                <div class="control-group">
+                    <label class="control-label" for="title">帮养标题</label>
+                    <div class="controls">
+                        <input type="text" id="title" placeholder="请输入标题">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="petType">宠物类型</label>
+                    <div class="controls">
+                        <select id="petType">
+                            <option value="0">不限</option>
+                            <option value="1">猫类</option>
+                            <option value="2">犬类</option>
+                            <option value="3">水生类</option>
+                            <option value="4">其他类</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="dateType">帮养时间</label>
+                    <div class="controls">
+                        <select id="dateType">
+                            <option value="0">不限</option>
+                            <option value="1">1-15天</option>
+                            <option value="2">15-30天</option>
+                            <option value="3">30天以上</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputMoney">帮养报酬</label>
+                    <div class="controls">
+                        <input type="text" id="inputMoney" placeholder="如：20元/天（500元/月）">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="inputDescribe">具体描述</label>
+                    <div class="controls">
+                        <textarea id="inputDescribe" rows="3" placeholder="要求描述不超过500字" maxlength="500" onkeyup="changeTextNum()"></textarea>
+                        <span><span id="textNum">0</span>/500</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="selectProvince">所在省</label>
+                    <div class="controls">
+                        <input id="provinceInput" type="hidden" value="未选择">
+                        <select id="selectProvince" onchange="changeProvince()">
+                            <option value="">请选择省</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="selectCity">所在市</label>
+                    <div class="controls">
+                        <input id="cityInput" type="hidden" value="未选择">
+                        <select id="selectCity" onchange="changeCity()">
+                            <option value="">请选择市</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="selectArea">所在县区</label>
+                    <div class="controls">
+                        <input id="areaInput" type="hidden" value="未选择">
+                        <select id="selectArea" onchange="changeArea()">
+                            <option value="">请选择县区</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" onclick="closeModal()">关闭</button>
+            <button type="button" class="btn btn-primary" onclick="subimitInfo()">提交</button>
+        </div>
+    </div>
+    <div class="span12">
+        <hr/>
+    </div>
+     <div th:if="${#lists.isEmpty(helpInfoList)}">
+        <span class="offset3">暂无信息</span>
+    </div>
+    <div class="span5 well" th:each="helpInfo : ${helpInfoList}">
+        <span id="helpId" hidden th:text="${helpInfo.id}"></span>
+        <div class="span3">
+            <div class="row">
+                <h4 th:text="${helpInfo.title}"></h4>
+                <h5 class="text-error">报酬：<span th:text="${helpInfo.money}"></span></h5>
+                <h5 class="text-info">寄养时间:<span th:text="${helpInfo.dateType}"></span></h5>
+                <h5 class="text-success">地区：<span th:text="${helpInfo.province}+'/'+${helpInfo.city}"></span></h5>
+            </div>
+        </div>
+        <div class="span1">
+            <a th:if="${flag}"><button type="button" class="btn btn-primary" th:onclick="'javascript:to_detail('+${helpInfo.id}+')'">详情</button></a>
+            <a th:unless="${flag}" th:href="'/help/helpdetails/'+${helpInfo.id}"><button type="button" class="btn btn-primary">详情</button></a>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    function to_detail(id) {
+        var thisURL=window.document.location.pathname;
+        var userAccount=$("#userAccount").text();
+        $.ajax({
+            url:"/operation/setLastURL",
+            data:{
+                lastURL:thisURL,
+                user:userAccount
+            },
+            success:function () {
+                window.location.href="/help/helpdetails/"+id;
+            }
+        })
+    }
+    function to_regist() {
+        window.location.href="/operation/to_regist"
+    }
+
+    function to_login() {
+        window.location.href="/operation/to_login";
+    }
+
+    function to_exit() {
+        $.ajax({
+            url:"/pethome/exit",
+            success:function (data) {
+                if (data.code==0){
+                    window.location.reload();
+                }
+            }
+        })
+    }
+    function chooseOne(){
+        var userAccount=$("#userAccount").text();
+        if (userAccount.length<=0){
+            alert("您未登录,请登录后再发布消息");
+            location.reload();
+        } else {
+            //模式框显示所做的方法
+            $(function () {
+                $("#addhelp").on('show.bs.modal',function () {
+                    loadProvince();
+                })
+            })
+        }
+    }
+    function loadQProvince() {
+        $.ajax({
+            url:"/operation/getProvince",
+            success:function (data) {
+                if (!data) return;
+                var html="";
+                href="/help/helpCare/"+$("#qPetTypeLink").text()+"_s0"
+                html+='<li class="qprovince" value="0"><a href='+href+'>'+"不限"+'</a></li>';
+                for (var i=0;i<data.data.length;i++){
+                    href="/help/helpCare/"+$("#qPetTypeLink").text()+"_s"+data.data[i].provinceId;
+                    html+='<li class="qprovince" value='+data.data[i].provinceId+'><a href='+href+'>'+data.data[i].province+'</a></li>';
+                }
+                $("#qProvince").append(html);
+            }
+        });
+    }
+    function loadQCity() {
+        var pid=$("#qProvinceLink").html().substr(2);
+        $.ajax({
+            url:"/operation/getCity/"+pid,
+            success:function (data) {
+                if (!data) return;
+                var html="";
+                href="/help/helpCare/"+$("#qPetTypeLink").text()+$("#qProvinceLink").text()+"_c0"
+                html+='<li class="qcity" value="0"><a href='+href+'>'+"不限"+'</a></li>';
+                for (var i=0;i<data.data.length;i++){
+                    href="/help/helpCare/"+$("#qPetTypeLink").text()+$("#qProvinceLink").text()+"_c"+data.data[i].cityId;
+                    html+='<li class="qcity" value='+data.data[i].cityId+'><a href='+href+'>'+data.data[i].city+'</a></li>';
+                }
+                $("#qCity").append(html);
+            }
+        });
+    }
+    function loadQArea() {
+        var cid=$("#qCityLink").html().substr(2);
+        $.ajax({
+            url:"/operation/getArea/"+cid,
+            success:function (data) {
+                if (!data) return;
+                var html="";
+                href="/help/helpCare/"+$("#qPetTypeLink").text()+$("#qProvinceLink").text()+$("#qCityLink").text()+"_a0"
+                html+='<li class="qcity" value="0"><a href='+href+'>'+"不限"+'</a></li>';
+                for (var i=0;i<data.data.length;i++){
+                    href="/help/helpCare/"+$("#qPetTypeLink").text()+$("#qProvinceLink").text()+$("#qCityLink").text()+"_a"+data.data[i].areaId;
+                    html+='<li class="qcity" value='+data.data[i].areaId+'><a href='+href+'>'+data.data[i].area+'</a></li>';
+                }
+                $("#qArea").append(html);
+            }
+        });
+    }
+    //加载省
+    function loadProvince() {
+        $.ajax({
+            url:"/operation/getProvince",
+            success:function (data) {
+                if (!data) return;
+                var html="";
+                for (var i=0;i<data.data.length;i++){
+                    html+='<option value='+data.data[i].provinceId+'>'+data.data[i].province+'</option>';
+                }
+                $("#selectProvince").append(html);
+            }
+        });
+    }
+    //选择省后所做操作
+    function changeProvince() {
+        $("#provinceInput").val($("#selectProvince option:selected").html());
+        var pid=$("#selectProvince").val();
+        $.ajax({
+            url:"/operation/getCity/"+pid,
+            success:function (data) {
+                if (!data) return;
+                $("#selectCity").html("<option value=''>请选择市</option>");
+                $("#selectArea").html("<option value=''>请选择县区</option>");
+                var html="";
+                for (var i=0;i<data.data.length;i++){
+                    html+='<option value='+data.data[i].cityId+'>'+data.data[i].city+'</option>';
+                }
+                $("#selectCity").append(html);
+            }
+        });
+    }
+    //选择市后所做操作
+    function changeCity() {
+        $("#cityInput").val($("#selectCity option:selected").html());
+        var cid=$("#selectCity").val();
+        $.ajax({
+            url:"/operation/getArea/"+cid,
+            success:function (data) {
+                if (!data) return;
+                $("#selectArea").html("<option value=''>请选择区县</option>");
+                var html="";
+                for (var i=0;i<data.data.length;i++){
+                    html+='<option value='+data.data[i].areaId+'>'+data.data[i].area+'</option>';
+                }
+                $("#selectArea").append(html);
+            }
+        });
+    }
+    //选择县区后的操作
+    function changeArea() {
+        $("#areaInput").val($("#selectArea option:selected").html());
+    }
+    //关闭模式框操作
+    function closeModal() {
+        $("#addfoster").modal('hide');
+    }
+    //显示输入框当前字数操作
+    function changeTextNum() {
+        $("#textNum").text($("#inputDescribe").val().length);
+    }
+    function subimitInfo() {
+        $.ajax({
+            url:"/help/addHelp",
+            data:{
+                userAccount:$("#userAccount").text(),
+                title:$("#title").val(),
+                petType:$("#petType option:selected").html(),
+                dateType:$("#dateType option:selected").html(),
+                money:$("#inputMoney").val(),
+                describe:$("#inputDescribe").val(),
+                province:$("#provinceInput").val(),
+                city:$("#cityInput").val(),
+                area:$("#areaInput").val(),
+            },
+            success:function (data) {
+                if (data.code==0) {
+                    alert("发布成功");
+                    window.location.reload();
+                }else {
+                    alert(data.message);
+                }
+            }
+        })
+    }
+    window.setInterval(function () {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    },1000*60)
+    var queryUnRead={
+        url:"/operation/getUnRead/"+$("#userAccount").text(),
+        success:function (data) {
+            if (data>0&&data<100){
+                $("#unRead").text(data);
+            }
+            if (data>100){
+                $("#unRead").text("99+");
+            }
+        }
+    }
+    function queryUn() {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    }
+    function isEmpty(){
+        var userAccount=$("#userAccount").text();
+        if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+            return true;
+        }else{
+            return false;
+        }
+    }
+</script>
+</html>

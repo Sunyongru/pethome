@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>寄养</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap/css/bootstrap.min.css}" />
+    <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
+    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
+    <!-- layer -->
+    <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
+    <!-- common.js -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+</head>
+<body background="/img/bg2.jpg" onload="queryUn()">
+<div id="userAccount" class="hide-text" th:text="${userAccount}"></div>
+<div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" >宠物之家</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li><a href="/pethome/index">首页</a></li>
+                    <li><a href="/foster/fosterCare/my">我要寄养</a></li>
+                    <li class="active"><a href="/help/helpCare/my">我要帮养</a></li>
+                </ul>
+                <div class="pull-right">
+                    <div th:unless="${flag}">
+                        <ul class="nav">
+                            <a><button class="btn" onclick="to_regist()">注册</button></a>
+                            <button class="btn" onclick="to_login()">登录</button>
+                        </ul>
+                    </div>
+                    <div th:if="${flag}">
+                        <ul class="nav">
+                            <li><a th:href="'/user/userInfo/'+${userAccount}">个人信息<span id="unRead" class="badge badge-important"></span></a></li>
+                            <a><button class="btn" onclick="to_exit()">退出</button></a>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="span12">
+        <form class="form-horizontal well">
+            <span id="helpId" th:text="${helpVo.id}" hidden></span>
+            <div class="control-group">
+                <div class="controls">
+                    <h1 class="text-info" th:text="${helpVo.title}"></h1>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button class="btn btn-success" disabled th:text="${helpVo.petType}"></button>
+                    <button class="btn btn-info" disabled th:text="${helpVo.dateType}"></button>
+                    <button class="btn btn-danger" disabled th:text="${helpVo.money}"></button>
+                    <button class="btn btn-info" disabled th:text="${helpVo.province}"></button>
+                    <button class="btn btn-info" disabled th:text="${helpVo.city}"></button>
+                    <button class="btn btn-info" disabled th:text="${helpVo.area}"></button>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <h4>要求描述</h4>
+                    <label th:text="${helpVo.describetion}"></label>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <h4>发布人</h4>
+                    <label th:text="${helpVo.userName}?:未设置昵称"></label>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <h4>发布日期</h4>
+                    <label th:text="${helpVo.createDate}"></label>
+                </div>
+            </div>
+            <div class="control-group">
+                <div th:if="${userAccount} eq ${helpVo.userAccount}" class="controls">
+                    <a th:if="${flag}"><button type="button" class="btn" onclick="go_back()">返回</button></a>
+                    <a th:unless="${flag}" onClick="javascript :history.go(-1);"><button type="button" class="btn">返回</button></a>
+                    <button type="button" class="btn btn-danger" onclick="deleteInfo()">删除</button>
+                </div>
+                <div th:unless="${userAccount} eq ${helpVo.userAccount}" class="controls">
+                    <a th:if="${flag}"><button type="button" class="btn" onclick="go_back()">返回</button></a>
+                    <a th:unless="${flag}" onClick="javascript :history.go(-1);"><button type="button" class="btn">返回</button></a>
+                    <button type="button" class="btn btn-primary" onclick="to_chat()">沟通</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script>
+    function go_back() {
+        var userAccount=$("#userAccount").text();
+        $.ajax({
+            url:"/operation/getLastURL",
+            data:{
+                user:userAccount
+            },
+            success:function (data) {
+                var pathName=data;
+                window.location.href=pathName;
+            }
+        })
+    }
+    //用于跳转到注册页面
+    function to_regist() {
+        window.location.href="/operation/to_regist"
+    }
+    //用于跳转到登录页面
+    function to_login() {
+        window.location.href="/operation/to_login";
+    }
+    //用于退出登录
+    function to_exit() {
+        $.ajax({
+            url:"/pethome/exit",
+            success:function (data) {
+                if (data.code==0){
+                    window.location.reload();
+                }
+            }
+        })
+    }
+    function deleteInfo() {
+        var helpId=$("#helpId").text();
+        $.ajax({
+            url:"/help/delete/"+helpId,
+            success:function (data) {
+                if (data.code==0){
+                    alert("删除成功");
+                    self.location=document.referrer;
+                } else {
+                    alert(data.message);
+                }
+            }
+        })
+    }
+    function to_chat() {
+        var useAccount=$("#userAccount").text();
+        if (useAccount.length<=0){
+            alert("您未登录,请登录后再进行沟通");
+            location.reload();
+        }else {
+            window.location.href="/user/to_chat/"+$("#fosterUserAccount").text();
+        }
+    }
+    window.setInterval(function () {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    },1000*60)
+    var queryUnRead={
+        url:"/operation/getUnRead/"+$("#userAccount").text(),
+        success:function (data) {
+            if (data>0&&data<100){
+                $("#unRead").text(data);
+            }
+            if (data>100){
+                $("#unRead").text("99+");
+            }
+        }
+    }
+    function queryUn() {
+        if(!isEmpty()){
+            $.ajax(queryUnRead)
+        }
+    }
+    function isEmpty(){
+        var userAccount=$("#userAccount").text();
+        if(typeof userAccount == "undefined" || userAccount == null || userAccount == ""){
+            return true;
+        }else{
+            return false;
+        }
+    }
+</script>
+</html>
